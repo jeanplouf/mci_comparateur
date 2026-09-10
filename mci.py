@@ -14,7 +14,15 @@
 # EC    rendement du recyclage en fin de vie (typiquement 0.7–0.9)
 # EF    rendement du recyclage qui a produit ta matière d'entrée
 
+# X     intensité de l'usage
+# L	    durée de vie du produit
+# L_av	durée de vie moyenne du secteur
+# U 	intensité d'usage (h/an, cycles/an, km/an…)
+# U_av	intensité moyenne du secteur
+
 # LFI   indice de flux linéaire
+# F     facteur d'utilité
+# MCI   indice de circularité
 
 
 def masse_vierge(M, FR, FU):
@@ -45,3 +53,18 @@ def masse_totale_dechets(W0, W_C, W_F):
 def indice_flux_lineaire(V, W, M, W_C, W_F):
     """Calcule l'indice de flux linéaire LFI"""
     return (V + W) / (2 * M + (W_F - W_C) / 2)
+
+
+def intensite_usage(L, L_av, U, U_av):
+    """Calcule l'intensité de l'usage X"""
+    return (L / L_av) * (U / U_av)
+
+
+def facteur_utilite(X):
+    """Calcule le facteur d'utilité F"""
+    return 0.9 / X
+
+
+def indice_circularite(LFI, F):
+    """Calcule l'indice de circularité MCI"""
+    return 1 - LFI * F

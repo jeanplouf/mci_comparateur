@@ -5,6 +5,9 @@ from mci import (
     pertes_recyclage_amont,
     masse_totale_dechets,
     indice_flux_lineaire,
+    intensite_usage,
+    facteur_utilite,
+    indice_circularite,
 )
 from pytest import approx
 
@@ -91,3 +94,42 @@ def test_lfi_boucle_parfaite():
     W_F = pertes_recyclage_amont(M, 1.0, 1.0)
     W = masse_totale_dechets(W0, W_C, W_F)
     assert indice_flux_lineaire(V, W, M, W_C, W_F) == approx(0)
+
+
+# --- intensite_usage ---
+
+
+def test_intensite_usage_cas_nominal():
+    # produit qui dure 2x plus longtemps et s'utilise 1.5x plus intensement
+    assert intensite_usage(20, 10, 300, 200) == approx(3)
+
+
+def test_intensite_usage_strictement_moyen():
+    # L = L_av et U = U_av : usage exactement moyen
+    assert intensite_usage(10, 10, 200, 200) == approx(1)
+
+
+# --- facteur_utilite ---
+
+
+def test_facteur_utilite_usage_moyen():
+    # X = 1 : la calibration doit ressortir telle quelle
+    assert facteur_utilite(1.0) == approx(0.9)
+
+
+def test_facteur_utilite_usage_double():
+    # X = 2 : on retranche deux fois moins
+    assert facteur_utilite(2.0) == approx(0.45)
+
+
+# --- indice_circularite ---
+
+
+def test_mci_pire_cas():
+    # totalement lineaire (LFI = 1) et usage moyen (F = 0.9)
+    assert indice_circularite(1.0, 0.9) == approx(0.1)
+
+
+def test_mci_boucle_parfaite():
+    # LFI = 0 : aucun flux lineaire, quel que soit l'usage
+    assert indice_circularite(0.0, 0.9) == approx(1)
