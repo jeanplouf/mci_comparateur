@@ -1,48 +1,47 @@
-"""Calculateur de score de circularité — version 0."""
+"""Calculateur de score de circularité — version 1."""
 
-# --- Paramètres de réglage ---
-P_ENTREE = 0.5              # poids de la matière recyclée en entrée
-P_SORTIE = 0.5              # poids de la matière récupérée en sortie
-DUREE_VIE_REFERENCE = 10    # durée de vie moyenne de référence, en années
-
-
-
+# V     masse vierge
 # M 	masse totale du produit (> 0)
 # FR	fraction recyclée en entrée	(0 à 1)
 # FU    fraction réemployée en entrée (0 à 1)
 # CR	fraction collectée pour recyclage (0 à 1)
 # CU	fraction destinée au réemploi
 
+# W     masse totale de déchets
+# W0    déchets directs, ce qui part en décharge sans détour
+# W_C   pertes du recyclage en fin de vie
+# W_F   pertes du recyclage amont, celui qui a fourni ta matière recyclée
+# EC    rendement du recyclage en fin de vie (typiquement 0.7–0.9)
+# EF    rendement du recyclage qui a produit ta matière d'entrée
 
-def masse_vierge(masse_totale, fraction_recyclee, fraction_reemployee):
-    """Calcule la masse de matière vierge"""
-    return masse_totale*(1 - fraction_recyclee - fraction_reemployee)
-
-def masse_dechets_directs(masse_totale, fraction_collectee, fraction_reemploi):
-    """Calcule la masse de déchets non récupérés"""
-    return masse_totale*(1 - fraction_collectee - fraction_reemploi)
-
-
-def calculer_score(part_recyclee, part_recuperee, duree_vie):
-    """Calcule un score de circularité simplifié.
-
-    part_recyclee  : part de matière recyclée en entrée (0 à 1)
-    part_recuperee : part de matière récupérée en fin de vie (0 à 1)
-    duree_vie      : durée de vie du produit, en années
-
-    Retourne un score entre 0 et 1.
-    """
-    score_matiere = P_ENTREE * part_recyclee + P_SORTIE * part_recuperee
-    f_usage = duree_vie / DUREE_VIE_REFERENCE
-    score = min(1.0, score_matiere * f_usage)
-    return score
+# LFI   indice de flux linéaire
 
 
-if __name__ == "__main__":
-    # Produit de test : une chaise
-    chaise_recyclee = 0.3
-    chaise_recuperee = 0.6
-    chaise_duree_vie = 15
+def masse_vierge(M, FR, FU):
+    """Calcule la masse de matière vierge -> V"""
+    return M * (1 - FR - FU)
 
-    resultat = calculer_score(chaise_recyclee, chaise_recuperee, chaise_duree_vie)
-    print(f"Score de circularité de la chaise : {resultat:.3f}")
+
+def dechets_directs(M, CR, CU):
+    """Calcule la masse de déchets non récupérés -> W0"""
+    return M * (1 - CR - CU)
+
+
+def pertes_recyclage_aval(M, CR, EC):
+    """Calcule la masse de pertes liées au recyclage en fin de vie -> W_C"""
+    return M * CR * (1 - EC)
+
+
+def pertes_recyclage_amont(M, FR, EF):
+    """Masse perdue lors du recyclage ayant produit la matière d'entrée -> W_F"""
+    return M * FR * (1 / EF - 1)
+
+
+def masse_totale_dechets(W0, W_C, W_F):
+    """Calcule la masse de déchets totale -> W"""
+    return W0 + (W_C + W_F) / 2
+
+
+def indice_flux_lineaire(V, W, M, W_C, W_F):
+    """Calcule l'indice de flux linéaire LFI"""
+    return (V + W) / (2 * M + (W_F - W_C) / 2)
