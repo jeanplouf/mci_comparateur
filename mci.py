@@ -68,3 +68,16 @@ def facteur_utilite(X):
 def indice_circularite(LFI, F):
     """Calcule l'indice de circularité MCI"""
     return 1 - LFI * F
+
+
+def calculer_mci(M, FR, FU, CR, CU, EC, EF, L, L_av, U, U_av):
+    V = masse_vierge(M, FR, FU)
+    W_F = pertes_recyclage_amont(M, FR, EF)
+    W_C = pertes_recyclage_aval(M, CR, EC)
+    W0 = dechets_directs(M, CR, CU)
+    W = masse_totale_dechets(W0, W_C, W_F)
+    LFI = indice_flux_lineaire(V, W, M, W_C, W_F)
+    X = intensite_usage(L, L_av, U, U_av)
+    F = facteur_utilite(X)
+    MCI = indice_circularite(LFI, F)
+    return MCI

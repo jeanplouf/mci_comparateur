@@ -8,6 +8,7 @@ from mci import (
     intensite_usage,
     facteur_utilite,
     indice_circularite,
+    calculer_mci,
 )
 from pytest import approx
 
@@ -133,3 +134,23 @@ def test_mci_pire_cas():
 def test_mci_boucle_parfaite():
     # LFI = 0 : aucun flux lineaire, quel que soit l'usage
     assert indice_circularite(0.0, 0.9) == approx(1)
+
+
+# --- calculer_mci ---
+
+
+def test_mci_produit_totalement_lineaire():
+    # 100 % vierge en entree, 100 % enfoui en sortie, usage strictement moyen
+    assert calculer_mci(
+        M=100,
+        FR=0,
+        FU=0,
+        CR=0,
+        CU=0,
+        EC=0.8,
+        EF=0.8,
+        L=10,
+        L_av=10,
+        U=200,
+        U_av=200,
+    ) == approx(0.1)
