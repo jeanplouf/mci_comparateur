@@ -6,6 +6,23 @@ P_SORTIE = 0.5              # poids de la matière récupérée en sortie
 DUREE_VIE_REFERENCE = 10    # durée de vie moyenne de référence, en années
 
 
+
+# M 	masse totale du produit (> 0)
+# FR	fraction recyclée en entrée	(0 à 1)
+# FU    fraction réemployée en entrée (0 à 1)
+# CR	fraction collectée pour recyclage (0 à 1)
+# CU	fraction destinée au réemploi
+
+
+def masse_vierge(masse_totale, fraction_recyclee, fraction_reemployee):
+    """Calcule la masse de matière vierge"""
+    return masse_totale*(1 - fraction_recyclee - fraction_reemployee)
+
+def masse_dechets_directs(masse_totale, fraction_collectee, fraction_reemploi):
+    """Calcule la masse de déchets non récupérés"""
+    return masse_totale*(1 - fraction_collectee - fraction_reemploi)
+
+
 def calculer_score(part_recyclee, part_recuperee, duree_vie):
     """Calcule un score de circularité simplifié.
 
