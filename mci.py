@@ -24,6 +24,12 @@
 # F     facteur d'utilité
 # MCI   indice de circularité
 
+FACTEUR_CALIBRATION = (
+    0.9  # calibre le MCI : un produit lineaire d'usage moyen score 0.1
+)
+L_AV_MOBILIER = 10  # duree de vie moyenne du secteur, en annees
+U_AV_MOBILIER = 200  # intensite d'usage moyenne du secteur, en h/an
+
 
 def masse_vierge(M, FR, FU):
     """Calcule la masse de matière vierge -> V"""
@@ -62,7 +68,7 @@ def intensite_usage(L, L_av, U, U_av):
 
 def facteur_utilite(X):
     """Calcule le facteur d'utilité F"""
-    return 0.9 / X
+    return FACTEUR_CALIBRATION / X
 
 
 def indice_circularite(LFI, F):
@@ -70,14 +76,30 @@ def indice_circularite(LFI, F):
     return 1 - LFI * F
 
 
-def calculer_mci(M, FR, FU, CR, CU, EC, EF, L, L_av, U, U_av):
-    V = masse_vierge(M, FR, FU)
-    W_F = pertes_recyclage_amont(M, FR, EF)
-    W_C = pertes_recyclage_aval(M, CR, EC)
-    W0 = dechets_directs(M, CR, CU)
+class Produit:
+    """Représente les produits dont on doit calculer le MCI"""
+
+    def __init__(self, M, FR, FU, CR, CU, EC, EF, L, U):
+        self.M = M
+        self.FR = FR
+        self.FU = FU
+        self.CR = CR
+        self.CU = CU
+        self.EC = EC
+        self.EF = EF
+        self.L = L
+        self.U = U
+
+
+def calculer_mci(produit, L_av, U_av):
+    """Calcule l'indice de circularité MCI en compilant toutes les formules"""
+    V = masse_vierge(produit.M, produit.FR, produit.FU)
+    W_F = pertes_recyclage_amont(produit.M, produit.FR, produit.EF)
+    W_C = pertes_recyclage_aval(produit.M, produit.CR, produit.EC)
+    W0 = dechets_directs(produit.M, produit.CR, produit.CU)
     W = masse_totale_dechets(W0, W_C, W_F)
-    LFI = indice_flux_lineaire(V, W, M, W_C, W_F)
-    X = intensite_usage(L, L_av, U, U_av)
+    LFI = indice_flux_lineaire(V, W, produit.M, W_C, W_F)
+    X = intensite_usage(produit.L, L_av, produit.U, U_av)
     F = facteur_utilite(X)
     MCI = indice_circularite(LFI, F)
     return MCI
