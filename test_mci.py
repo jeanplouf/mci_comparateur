@@ -142,4 +142,5 @@ def test_mci_boucle_parfaite():
 
 def test_mci_produit_totalement_lineaire():
     chaise = Produit(M=100, FR=0, FU=0, CR=0, CU=0, EC=0.8, EF=0.8, L=10, U=200)
-    assert calculer_mci(chaise, L_av=10, U_av=200) == approx(0.1)
+    secteur = "mobilier"
+    assert calculer_mci(chaise, secteur) == approx(0.1)

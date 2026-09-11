@@ -27,8 +27,12 @@
 FACTEUR_CALIBRATION = (
     0.9  # calibre le MCI : un produit lineaire d'usage moyen score 0.1
 )
-L_AV_MOBILIER = 10  # duree de vie moyenne du secteur, en annees
-U_AV_MOBILIER = 200  # intensite d'usage moyenne du secteur, en h/an
+
+SECTEURS = {
+    "mobilier": {"L_av": 10, "U_av": 200},
+    "electromenager": {"L_av": 8, "U_av": 300},
+    "textile": {"L_av": 3, "U_av": 50},
+}
 
 
 def masse_vierge(M, FR, FU):
@@ -91,8 +95,10 @@ class Produit:
         self.U = U
 
 
-def calculer_mci(produit, L_av, U_av):
+def calculer_mci(produit, secteur):
     """Calcule l'indice de circularité MCI en compilant toutes les formules"""
+    L_av = SECTEURS[secteur]["L_av"]
+    U_av = SECTEURS[secteur]["U_av"]
     V = masse_vierge(produit.M, produit.FR, produit.FU)
     W_F = pertes_recyclage_amont(produit.M, produit.FR, produit.EF)
     W_C = pertes_recyclage_aval(produit.M, produit.CR, produit.EC)
