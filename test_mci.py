@@ -137,10 +137,16 @@ def test_mci_boucle_parfaite():
     assert indice_circularite(0.0, 0.9) == approx(1)
 
 
+def test_mci_score_negatif():
+    # MCI < 0
+    assert indice_circularite(1.5, 0.9) == approx(0)
+
+
 # --- calculer_mci ---
 
 
 def test_mci_produit_totalement_lineaire():
-    chaise = Produit(M=100, FR=0, FU=0, CR=0, CU=0, EC=0.8, EF=0.8, L=10, U=200)
-    secteur = "mobilier"
-    assert calculer_mci(chaise, secteur) == approx(0.1)
+    chaise = Produit(
+        "chaise", "mobilier", M=100, FR=0, FU=0, CR=0, CU=0, EC=0.8, EF=0.8, L=10, U=200
+    )
+    assert calculer_mci(chaise) == approx(0.1)

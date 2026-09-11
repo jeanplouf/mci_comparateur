@@ -15,10 +15,10 @@
 # EF    rendement du recyclage qui a produit ta matière d'entrée
 
 # X     intensité de l'usage
-# L	    durée de vie du produit
-# L_av	durée de vie moyenne du secteur
+# L	    durée de vie du produit (années)
+# L_av	durée de vie moyenne du secteur (années)
 # U 	intensité d'usage (h/an, cycles/an, km/an…)
-# U_av	intensité moyenne du secteur
+# U_av	intensité moyenne du secteur (h/an, cycles/an, km/an…)
 
 # LFI   indice de flux linéaire
 # F     facteur d'utilité
@@ -31,7 +31,8 @@ FACTEUR_CALIBRATION = (
 SECTEURS = {
     "mobilier": {"L_av": 10, "U_av": 200},
     "electromenager": {"L_av": 8, "U_av": 300},
-    "textile": {"L_av": 3, "U_av": 50},
+    "maroquinerie": {"L_av": 3, "U_av": 50},
+    "article de sport": {"L_av": 3, "U_av": 50},
 }
 
 
@@ -77,13 +78,15 @@ def facteur_utilite(X):
 
 def indice_circularite(LFI, F):
     """Calcule l'indice de circularité MCI"""
-    return 1 - LFI * F
+    return max(0.0, 1 - LFI * F)
 
 
 class Produit:
     """Représente les produits dont on doit calculer le MCI"""
 
-    def __init__(self, M, FR, FU, CR, CU, EC, EF, L, U):
+    def __init__(self, nom, secteur, M, FR, FU, CR, CU, EC, EF, L, U):
+        self.nom = nom
+        self.secteur = secteur
         self.M = M
         self.FR = FR
         self.FU = FU
@@ -94,11 +97,14 @@ class Produit:
         self.L = L
         self.U = U
 
+    def __str__(self):
+        return f"{self.nom}"
 
-def calculer_mci(produit, secteur):
+
+def calculer_mci(produit):
     """Calcule l'indice de circularité MCI en compilant toutes les formules"""
-    L_av = SECTEURS[secteur]["L_av"]
-    U_av = SECTEURS[secteur]["U_av"]
+    L_av = SECTEURS[produit.secteur]["L_av"]
+    U_av = SECTEURS[produit.secteur]["U_av"]
     V = masse_vierge(produit.M, produit.FR, produit.FU)
     W_F = pertes_recyclage_amont(produit.M, produit.FR, produit.EF)
     W_C = pertes_recyclage_aval(produit.M, produit.CR, produit.EC)
@@ -109,3 +115,98 @@ def calculer_mci(produit, secteur):
     F = facteur_utilite(X)
     MCI = indice_circularite(LFI, F)
     return MCI
+
+
+if __name__ == "__main__":
+
+    # --- produits de test ---
+
+    produits = [
+        # chaise bois massif, matiere vierge, fin de vie mal geree
+        Produit(
+            nom="chaise",
+            secteur="mobilier",
+            M=6,
+            FR=0.05,
+            FU=0,
+            CR=0.20,
+            CU=0,
+            EC=0.75,
+            EF=0.80,
+            L=8,
+            U=150,
+        ),
+        # frigo : filiere DEEE structuree, forte collecte, beaucoup de metal
+        Produit(
+            nom="frigo",
+            secteur="electromenager",
+            M=55,
+            FR=0.30,
+            FU=0,
+            CR=0.85,
+            CU=0.05,
+            EC=0.85,
+            EF=0.85,
+            L=12,
+            U=350,
+        ),
+        # buffet chine : reemploi en entree, longue duree de vie
+        Produit(
+            nom="buffet",
+            secteur="mobilier",
+            M=45,
+            FR=0.10,
+            FU=0.60,
+            CR=0.15,
+            CU=0.20,
+            EC=0.70,
+            EF=0.80,
+            L=25,
+            U=200,
+        ),
+        # four encastrable : collecte correcte, usage intensif
+        Produit(
+            nom="four",
+            secteur="electromenager",
+            M=30,
+            FR=0.25,
+            FU=0,
+            CR=0.70,
+            CU=0,
+            EC=0.80,
+            EF=0.85,
+            L=10,
+            U=400,
+        ),
+        # table exterieur alu : alu tres recyclable, mais usage saisonnier faible
+        Produit(
+            nom="table_exterieur",
+            secteur="mobilier",
+            M=12,
+            FR=0.50,
+            FU=0,
+            CR=0.60,
+            CU=0,
+            EC=0.90,
+            EF=0.90,
+            L=12,
+            U=80,
+        ),
+        # canape mousse + textile : quasi tout en decharge
+        Produit(
+            nom="canape",
+            secteur="mobilier",
+            M=70,
+            FR=0.05,
+            FU=0,
+            CR=0.10,
+            CU=0.05,
+            EC=0.60,
+            EF=0.75,
+            L=9,
+            U=300,
+        ),
+    ]
+
+    for produit in produits:
+        print(f"{produit.nom:20} {calculer_mci(produit):.2f}")
