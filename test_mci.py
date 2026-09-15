@@ -13,6 +13,8 @@ from mci import (
     produit_depuis_dict,
     sauvegarder,
     charger,
+    saisir_produit,
+    menu,
 )
 from pytest import approx, raises
 import json

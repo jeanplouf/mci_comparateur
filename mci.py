@@ -146,6 +146,22 @@ class Produit:
         }
 
 
+def calculer_mci(produit):
+    """Calcule l'indice de circularité MCI en compilant toutes les formules"""
+    L_av = SECTEURS[produit.secteur]["L_av"]
+    U_av = SECTEURS[produit.secteur]["U_av"]
+    V = masse_vierge(produit.M, produit.FR, produit.FU)
+    W_F = pertes_recyclage_amont(produit.M, produit.FR, produit.EF)
+    W_C = pertes_recyclage_aval(produit.M, produit.CR, produit.EC)
+    W0 = dechets_directs(produit.M, produit.CR, produit.CU)
+    W = masse_totale_dechets(W0, W_C, W_F)
+    LFI = indice_flux_lineaire(V, W, produit.M, W_C, W_F)
+    X = intensite_usage(produit.L, L_av, produit.U, U_av)
+    F = facteur_utilite(X)
+    MCI = indice_circularite(LFI, F)
+    return MCI
+
+
 def produit_depuis_dict(donnees):
     return Produit(
         nom=donnees["nom"],
@@ -181,112 +197,68 @@ def charger(chemin):
     return liste_objet
 
 
-def calculer_mci(produit):
-    """Calcule l'indice de circularité MCI en compilant toutes les formules"""
-    L_av = SECTEURS[produit.secteur]["L_av"]
-    U_av = SECTEURS[produit.secteur]["U_av"]
-    V = masse_vierge(produit.M, produit.FR, produit.FU)
-    W_F = pertes_recyclage_amont(produit.M, produit.FR, produit.EF)
-    W_C = pertes_recyclage_aval(produit.M, produit.CR, produit.EC)
-    W0 = dechets_directs(produit.M, produit.CR, produit.CU)
-    W = masse_totale_dechets(W0, W_C, W_F)
-    LFI = indice_flux_lineaire(V, W, produit.M, W_C, W_F)
-    X = intensite_usage(produit.L, L_av, produit.U, U_av)
-    F = facteur_utilite(X)
-    MCI = indice_circularite(LFI, F)
-    return MCI
+def demander_nombre(question):
+    while True:
+        try:
+            return float(input(question))
+        except ValueError:
+            print("Veuillez entrer un nombre")
+
+
+def saisir_produit():
+    """Demande les caracteristiques d'un produit et le construit"""
+    nom = input("Nom du produit ?")
+    secteur = input("Secteur du produit ?")
+    M = demander_nombre("Masse du produit ?")
+    FR = demander_nombre("Fraction recyclée du produit ?")
+    FU = demander_nombre("Fraction réemployée du produit ?")
+    CR = demander_nombre("Fraction collectée pour recyclage du produit ?")
+    CU = demander_nombre("Fraction destinée au réemploi du produit ?")
+    EC = demander_nombre("Rendement du recyclage du produit en fin de vie ?")
+    EF = demander_nombre(
+        "Rendement du recyclage fournisseur de matière d'entrée du produit ?"
+    )
+    L = demander_nombre("Durée de vie du produit (années) ?")
+    U = demander_nombre("Intensité d'usage du produit ?")
+    return Produit(
+        nom=nom,
+        secteur=secteur,
+        M=M,
+        FR=FR,
+        FU=FU,
+        CR=CR,
+        CU=CU,
+        EC=EC,
+        EF=EF,
+        L=L,
+        U=U,
+    )
+
+
+def menu():
+    produits = []
+    while True:
+        choix = input(
+            "1. Ajouter un produit\n"
+            "2. Afficher les scores\n"
+            "3. Sauvegarder\n"
+            "4. Charger\n"
+            "5. Quitter\n"
+        )
+        if choix == "1":
+            produits.append(saisir_produit())
+        elif choix == "2":
+            for produit in produits:
+                print(f"{produit.nom}: {calculer_mci(produit):.2f}")
+        elif choix == "3":
+            sauvegarder(produits, "produits.json")
+        elif choix == "4":
+            produits = charger("produits.json")
+        elif choix == "5":
+            break
+        else:
+            print("Choix invalide, entrez un nombre entre 1 et 5")
 
 
 if __name__ == "__main__":
-
-    # --- produits de test ---
-
-    produits = [
-        # chaise bois massif, matiere vierge, fin de vie mal geree
-        Produit(
-            nom="chaise",
-            secteur="mobilier",
-            M=6,
-            FR=0.05,
-            FU=0,
-            CR=0.20,
-            CU=0,
-            EC=0.75,
-            EF=0.80,
-            L=8,
-            U=150,
-        ),
-        # frigo : filiere DEEE structuree, forte collecte, beaucoup de metal
-        Produit(
-            nom="frigo",
-            secteur="electromenager",
-            M=55,
-            FR=0.30,
-            FU=0,
-            CR=0.85,
-            CU=0.05,
-            EC=0.85,
-            EF=0.85,
-            L=12,
-            U=350,
-        ),
-        # buffet chine : reemploi en entree, longue duree de vie
-        Produit(
-            nom="buffet",
-            secteur="mobilier",
-            M=45,
-            FR=0.10,
-            FU=0.60,
-            CR=0.15,
-            CU=0.20,
-            EC=0.70,
-            EF=0.80,
-            L=25,
-            U=200,
-        ),
-        # four encastrable : collecte correcte, usage intensif
-        Produit(
-            nom="four",
-            secteur="electromenager",
-            M=30,
-            FR=0.25,
-            FU=0,
-            CR=0.70,
-            CU=0,
-            EC=0.80,
-            EF=0.85,
-            L=10,
-            U=400,
-        ),
-        # table exterieur alu : alu tres recyclable, mais usage saisonnier faible
-        Produit(
-            nom="table_exterieur",
-            secteur="mobilier",
-            M=12,
-            FR=0.50,
-            FU=0,
-            CR=0.60,
-            CU=0,
-            EC=0.90,
-            EF=0.90,
-            L=12,
-            U=80,
-        ),
-        # canape mousse + textile : quasi tout en decharge
-        Produit(
-            nom="canape",
-            secteur="mobilier",
-            M=70,
-            FR=0.05,
-            FU=0,
-            CR=0.10,
-            CU=0.05,
-            EC=0.60,
-            EF=0.75,
-            L=9,
-            U=300,
-        ),
-    ]
-
-    for produit in produits:
-        print(f"{produit.nom:20} {calculer_mci(produit):.2f}")
+    menu()
