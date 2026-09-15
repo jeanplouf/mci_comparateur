@@ -1,5 +1,7 @@
 """Calculateur de score de circularité — version 1."""
 
+import json
+
 # V     masse vierge
 # M 	masse totale du produit (> 0)
 # FR	fraction recyclée en entrée	(0 à 1)
@@ -158,6 +160,25 @@ def produit_depuis_dict(donnees):
         L=donnees["L"],
         U=donnees["U"],
     )
+
+
+def sauvegarder(produits, chemin):
+    """écrit une liste de Produit dans un fichier"""
+    liste_dictionnaire = []
+    for produit in produits:
+        liste_dictionnaire.append(produit.produit_vers_dict())
+    with open(chemin, "w", encoding="utf-8") as f:
+        json.dump(liste_dictionnaire, f, indent=2, ensure_ascii=False)
+
+
+def charger(chemin):
+    """lit un fichier, rend une liste de Produit"""
+    with open(chemin, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    liste_objet = []
+    for d in data:
+        liste_objet.append(produit_depuis_dict(d))
+    return liste_objet
 
 
 def calculer_mci(produit):

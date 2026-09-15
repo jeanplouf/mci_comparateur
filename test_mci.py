@@ -11,8 +11,11 @@ from mci import (
     indice_circularite,
     calculer_mci,
     produit_depuis_dict,
+    sauvegarder,
+    charger,
 )
 from pytest import approx, raises
+import json
 
 # --- masse_vierge ---
 
@@ -261,3 +264,27 @@ def test_aller_retour_dict():
     reconstruite = produit_depuis_dict(chaise.produit_vers_dict())
     assert reconstruite.nom == "chaise"
     assert reconstruite.M == approx(6)
+
+
+def test_sauvegarder_et_charger(tmp_path):
+    chemin = tmp_path / "produits.json"
+    chaise = Produit(
+        nom="chaise",
+        secteur="mobilier",
+        M=6,
+        FR=0.05,
+        FU=0,
+        CR=0.20,
+        CU=0,
+        EC=0.75,
+        EF=0.80,
+        L=8,
+        U=150,
+    )
+
+    sauvegarder([chaise], chemin)
+    recharges = charger(chemin)
+
+    assert len(recharges) == 1
+    assert recharges[0].nom == "chaise"
+    assert recharges[0].U == approx(150)
