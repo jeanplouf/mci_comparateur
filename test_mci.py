@@ -10,6 +10,7 @@ from mci import (
     facteur_utilite,
     indice_circularite,
     calculer_mci,
+    produit_depuis_dict,
 )
 from pytest import approx, raises
 
@@ -241,3 +242,22 @@ def test_rendement_amont_nul_refuse():
             L=10,
             U=200,
         )
+
+
+def test_aller_retour_dict():
+    chaise = Produit(
+        nom="chaise",
+        secteur="mobilier",
+        M=6,
+        FR=0.05,
+        FU=0,
+        CR=0.20,
+        CU=0,
+        EC=0.75,
+        EF=0.80,
+        L=8,
+        U=150,
+    )
+    reconstruite = produit_depuis_dict(chaise.produit_vers_dict())
+    assert reconstruite.nom == "chaise"
+    assert reconstruite.M == approx(6)

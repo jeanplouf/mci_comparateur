@@ -127,6 +127,38 @@ class Produit:
     def __str__(self):
         return f"{self.nom}"
 
+    def produit_vers_dict(self):
+        """Convertit le produit en dictionnaire serialisable"""
+        return {
+            "nom": self.nom,
+            "secteur": self.secteur,
+            "M": self.M,
+            "FR": self.FR,
+            "FU": self.FU,
+            "CR": self.CR,
+            "CU": self.CU,
+            "EC": self.EC,
+            "EF": self.EF,
+            "L": self.L,
+            "U": self.U,
+        }
+
+
+def produit_depuis_dict(donnees):
+    return Produit(
+        nom=donnees["nom"],
+        secteur=donnees["secteur"],
+        M=donnees["M"],
+        FR=donnees["FR"],
+        FU=donnees["FU"],
+        CR=donnees["CR"],
+        CU=donnees["CU"],
+        EC=donnees["EC"],
+        EF=donnees["EF"],
+        L=donnees["L"],
+        U=donnees["U"],
+    )
+
 
 def calculer_mci(produit):
     """Calcule l'indice de circularité MCI en compilant toutes les formules"""
