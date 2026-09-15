@@ -5,7 +5,7 @@
 # FR	fraction recyclée en entrée	(0 à 1)
 # FU    fraction réemployée en entrée (0 à 1)
 # CR	fraction collectée pour recyclage (0 à 1)
-# CU	fraction destinée au réemploi
+# CU	fraction destinée au réemploi (0 à 1)
 
 # W     masse totale de déchets
 # W0    déchets directs, ce qui part en décharge sans détour
@@ -85,6 +85,33 @@ class Produit:
     """Représente les produits dont on doit calculer le MCI"""
 
     def __init__(self, nom, secteur, M, FR, FU, CR, CU, EC, EF, L, U):
+        if M <= 0:
+            raise ValueError(f"la masse doit etre strictement positive (recu : {M})")
+        if FR < 0 or FR > 1:
+            raise ValueError(f"la fraction doit être entre 0 et 1 (recu : {FR})")
+        if FU < 0 or FU > 1:
+            raise ValueError(f"la fraction doit être entre 0 et 1 (recu : {FU})")
+        if CR < 0 or CR > 1:
+            raise ValueError(f"la fraction doit être entre 0 et 1 (recu : {CR})")
+        if CU < 0 or CU > 1:
+            raise ValueError(f"la fraction doit être entre 0 et 1 (recu : {CU})")
+        if EC < 0 or EC > 1:
+            raise ValueError(f"le rendement doit être entre 0 et 1 (recu : {EC})")
+        if EF <= 0 or EF > 1:
+            raise ValueError(f"le rendement doit être entre 0 et 1 (recu : {EF})")
+        if L <= 0:
+            raise ValueError(f"la durée de vie doit être positive (recu : {L})")
+        if U <= 0:
+            raise ValueError(f"l'intensité d'usage doit être positive (recu : {U})")
+        if FR + FU > 1:
+            raise ValueError(
+                f"la somme des fractions doit être inférieur à 1 (recu : {FR} + {FU})"
+            )
+        if CR + CU > 1:
+            raise ValueError(
+                f"la somme des fractions doit être inférieur à 1 (recu : {CR} + {CU})"
+            )
+
         self.nom = nom
         self.secteur = secteur
         self.M = M

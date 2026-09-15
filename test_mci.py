@@ -11,7 +11,7 @@ from mci import (
     indice_circularite,
     calculer_mci,
 )
-from pytest import approx
+from pytest import approx, raises
 
 # --- masse_vierge ---
 
@@ -150,3 +150,94 @@ def test_mci_produit_totalement_lineaire():
         "chaise", "mobilier", M=100, FR=0, FU=0, CR=0, CU=0, EC=0.8, EF=0.8, L=10, U=200
     )
     assert calculer_mci(chaise) == approx(0.1)
+
+
+# --- validation des entrees ---
+
+
+def test_masse_negative_refusee():
+    with raises(ValueError):
+        Produit(
+            nom="chaise",
+            secteur="mobilier",
+            M=-50,
+            FR=0,
+            FU=0,
+            CR=0,
+            CU=0,
+            EC=0.8,
+            EF=0.8,
+            L=10,
+            U=200,
+        )
+
+
+def test_fraction_hors_bornes_refusee():
+    # FR au-dessus de 1
+    with raises(ValueError):
+        Produit(
+            nom="chaise",
+            secteur="mobilier",
+            M=100,
+            FR=1.2,
+            FU=0,
+            CR=0,
+            CU=0,
+            EC=0.8,
+            EF=0.8,
+            L=10,
+            U=200,
+        )
+
+
+def test_somme_fractions_entree_refusee():
+    # FR + FU > 1, chacun valide pris isolement
+    with raises(ValueError):
+        Produit(
+            nom="chaise",
+            secteur="mobilier",
+            M=100,
+            FR=0.8,
+            FU=0.7,
+            CR=0,
+            CU=0,
+            EC=0.8,
+            EF=0.8,
+            L=10,
+            U=200,
+        )
+
+
+def test_duree_vie_nulle_refusee():
+    with raises(ValueError):
+        Produit(
+            nom="chaise",
+            secteur="mobilier",
+            M=100,
+            FR=0,
+            FU=0,
+            CR=0,
+            CU=0,
+            EC=0.8,
+            EF=0.8,
+            L=0,
+            U=200,
+        )
+
+
+def test_rendement_amont_nul_refuse():
+    # EF = 0 provoquerait une division par zero
+    with raises(ValueError):
+        Produit(
+            nom="chaise",
+            secteur="mobilier",
+            M=100,
+            FR=0,
+            FU=0,
+            CR=0,
+            CU=0,
+            EC=0.8,
+            EF=0,
+            L=10,
+            U=200,
+        )
