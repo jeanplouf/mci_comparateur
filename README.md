@@ -79,4 +79,4 @@ pytest
 ## Source
 
 Ellen MacArthur Foundation — *Circularity Indicators: An Approach to Measuring
-Circularity* (méthodologie alignée ISO 59020).
+Circularity* (méthodologie alignée ISO 59020).# estia-2-26-27-html-css-jeanplouf
